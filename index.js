@@ -26,7 +26,7 @@ d3.json("cleanedData.json", function (err, cleanedData) {
         .attr("class", "nodes")
         .selectAll("circle")
         .data(cleanedData[0])
-        .enter().append("cicle")
+        .enter().append("circle")
         .attr("r", function (d) {
             return Math.sqrt(d["Count"]);
         })
