@@ -65,12 +65,10 @@ d3.json("cleanedData.json", function (err, cleanedData) {
 
         node
             .attr("cx", function (d) {
-                if(d)
-                    return d.x;
+                return d.x;
             })
             .attr("cy", function (d) {
-                if(d)
-                    return d.y;
+                return d.y;
             });
     }
 
