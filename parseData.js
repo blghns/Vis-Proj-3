@@ -70,17 +70,17 @@ function cleanData(airportData, routeData, countriesData) {
         var destinationCountry = findCountryByAirport(route["Destination airport ID"]);
         if (sourceCountry && destinationCountry) {
             var found = flightsFromToCountries.find(function (d) {
-                return d["Source airport country"] === sourceCountry &&
-                    d["Destination airport country"] === destinationCountry;
+                return d["source"] === sourceCountry &&
+                    d["target"] === destinationCountry;
             });
             if (found) {
-                found["Count"]++;
+                found["value"]++;
             }
             else {
                 flightsFromToCountries.push({
-                    "Source airport country": sourceCountry,
-                    "Destination airport country": destinationCountry,
-                    "Count": 1
+                    "source": sourceCountry,
+                    "target": destinationCountry,
+                    "value": 1
                 });
             }
         }

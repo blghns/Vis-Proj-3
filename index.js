@@ -1,16 +1,21 @@
-var width = 960;
-var height = 600;
-var svg = d3.select("body").append("svg").attr("width", width + "px").attr("height", height + "px");
+var svg = d3.select("body").append("svg").attr("width", "100%").attr("height", "100%");
+
+var width = parseInt(svg.style('width'));
+var height = parseInt(svg.style('height'));
 
 var color = d3.scaleOrdinal(d3.schemeCategory10);
+var attractForce = d3.forceManyBody().strength(10).distanceMax(900).distanceMin(600);
+var repelForce = d3.forceManyBody().strength(-600).distanceMax(900).distanceMin(10);
+
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function (d) {
         return d["Country"]
     }))
-    .force("charge", d3.forceManyBody())
+    .force("attractForce", attractForce)
+    .force("repelForce", repelForce)
     .force("center", d3.forceCenter(width / 2, height / 2));
 
-d3.json("cleanedData.json", function (err, cleanedData) {
+d3.json("newCleanedData.json", function (err, cleanedData) {
     if (err) throw err;
 
     var link = svg.append("g")
@@ -19,7 +24,7 @@ d3.json("cleanedData.json", function (err, cleanedData) {
         .data(cleanedData[1])
         .enter().append("line")
         .attr("stroke-width", function (d) {
-            return Math.sqrt(d["Count"]);
+            return Math.log(d["value"]) + 1;
         });
 
     var node = svg.append("g")
@@ -28,11 +33,12 @@ d3.json("cleanedData.json", function (err, cleanedData) {
         .data(cleanedData[0])
         .enter().append("circle")
         .attr("r", function (d) {
-            return Math.sqrt(d["Count"]);
+            return Math.sqrt(d["Count"]) + 2;
         })
         .attr("fill", function (d) {
-            return color(d["Country"]);
-        }).call(d3.drag()
+            return color(d["Continent"]);
+        })
+        .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
             .on("end", dragended));
@@ -51,16 +57,16 @@ d3.json("cleanedData.json", function (err, cleanedData) {
     function ticked() {
         link
             .attr("x1", function (d) {
-                return d["Source airport country"].x;
+                return d.source.x;
             })
             .attr("y1", function (d) {
-                return d["Source airport country"].y;
+                return d.source.y;
             })
             .attr("x2", function (d) {
-                return d["Destination airport country"].x;
+                return d.target.x;
             })
             .attr("y2", function (d) {
-                return d["Destination airport country"].y;
+                return d.target.y;
             });
 
         node
