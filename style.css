@@ -17,3 +17,7 @@ body {
     stroke-width: 1.5px;
     fill-opacity: 0.8;
 }
+
+svg {
+    cursor: url("customCursor.svg"), pointer;
+}

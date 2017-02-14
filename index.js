@@ -5,7 +5,7 @@ var height = parseInt(svg.style('height'));
 
 var color = d3.scaleOrdinal(d3.schemeCategory10);
 var attractForce = d3.forceManyBody().strength(10).distanceMax(900).distanceMin(600);
-var repelForce = d3.forceManyBody().strength(-600).distanceMax(900).distanceMin(10);
+var repelForce = d3.forceManyBody().strength(-600).distanceMax(600).distanceMin(10);
 
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function (d) {
