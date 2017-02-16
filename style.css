@@ -22,8 +22,8 @@ body {
 .tooltip {
 	position: absolute;
 	text-align: left;
-	width: 75;
-	height: 20px;
+	width: 75px;
+	height: 25px;
 	padding: 8px;
 	font: 11px sans-serif;
 	background: #ffffff;
