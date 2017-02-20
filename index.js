@@ -4,8 +4,8 @@ var link, node;
 var width = parseInt(svg.style('width'));
 var height = parseInt(svg.style('height'));
 var color = d3.scaleOrdinal(d3.schemeCategory10);
-var attractForce = d3.forceManyBody().strength(10).distanceMax(900).distanceMin(600);
-var repelForce = d3.forceManyBody().strength(-600).distanceMax(600).distanceMin(10);
+var attractForce = d3.forceManyBody().strength(10).distanceMax(width).distanceMin(height);
+var repelForce = d3.forceManyBody().strength(-height).distanceMax(height).distanceMin(10);
 
 var tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
@@ -68,6 +68,9 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
     svg.call(d3.zoom()
         .scaleExtent([1 / 2, 8])
         .on("zoom", zoomed));
+
+    resize();
+    d3.select(window).on("resize", resize);
 
     function ticked() {
         link
@@ -153,4 +156,16 @@ function mouseout() {
     link.attr("stroke", function () {
         return "#999";
     });
+}
+
+function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+
+    attractForce = d3.forceManyBody().strength(10).distanceMax(width).distanceMin(height);
+    repelForce = d3.forceManyBody().strength(-height).distanceMax(height).distanceMin(10);
+    
+    simulation.force("center", d3.forceCenter(width / 2, height / 2))
+        .force("attractForce", attractForce)
+        .force("repelForce", repelForce)
 }
