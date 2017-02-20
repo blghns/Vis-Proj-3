@@ -1,5 +1,6 @@
 var svg = d3.select("body").append("svg").attr("width", "100%").attr("height", "100%");
 var svgGroup = svg.append("g");
+var linkData, nodeData;
 var link, node;
 var width = parseInt(svg.style('width'));
 var height = parseInt(svg.style('height'));
@@ -27,11 +28,13 @@ var transform = d3.zoomIdentity;
 
 d3.json("newCleanedData.json", function (err, cleanedData) {
     if (err) throw err;
+    linkData = cleanedData[1];
+    nodeData = cleanedData[0];
 
     link = svgGroup.append("g")
         .attr("class", "links")
         .selectAll("line")
-        .data(cleanedData[1])
+        .data(linkData)
         .enter().append("line")
         .attr("stroke-width", function (d) {
             return Math.log(d["value"]) + 1;
@@ -43,7 +46,7 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
     node = svgGroup.append("g")
         .attr("class", "nodes")
         .selectAll("circle")
-        .data(cleanedData[0])
+        .data(nodeData)
         .enter().append("circle")
         .attr("r", function (d) {
             return Math.sqrt(d["Count"]) + 2;
@@ -59,11 +62,11 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
             .on("drag", dragged)
             .on("end", dragended));
 
-    simulation.nodes(cleanedData[0])
+    simulation.nodes(nodeData)
         .on("tick", ticked);
 
     simulation.force("link")
-        .links(cleanedData[1]);
+        .links(linkData);
 
     svg.call(d3.zoom()
         .scaleExtent([1 / 2, 8])
@@ -172,8 +175,52 @@ function resize() {
         .force("attractForce", attractForce)
         .force("repelForce", repelForce);
 
-    if (!d3.event.active){
+    if (!d3.event.active) {
         simulation.alphaTarget(0.3).restart();
-        setTimeout(function(){simulation.alphaTarget(0)}, 500);
+        setTimeout(function () {
+            simulation.alphaTarget(0)
+        }, 500);
     }
+}
+
+function filterContinents(selectedContinents) {
+    var newNodeData = nodeData.filter(function (d) {
+        return selectedContinents.includes(d["Continent"]);
+    });
+    var newLinkData = linkData.filter(function (d) {
+        return selectedContinents.includes(d.source.Continent) && selectedContinents.includes(d.target.Continent);
+    });
+
+    node.data(newNodeData)
+        .exit().transition()
+        .attr("r", 0)
+        .remove();
+
+    node.enter().append("circle").merge(node)
+        .attr("r", function (d) {
+            return Math.sqrt(d["Count"]) + 2;
+        })
+        .attr("fill", function (d) {
+            return color(d["Continent"]);
+        })
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseout", mouseout)
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+
+    link.data(newLinkData)
+        .exit().transition()
+        .attr("stroke-width", 0);
+
+    link.enter().append("line").merge(link)
+        .attr("stroke-width", function (d) {
+            return Math.log(d["value"]) + 1;
+        })
+        .attr("stroke", function () {
+            return "#999"
+        });
+
 }
