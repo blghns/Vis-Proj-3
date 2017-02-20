@@ -1,5 +1,6 @@
 var svg = d3.select("body").append("svg").attr("width", "100%").attr("height", "100%");
 var svgGroup = svg.append("g");
+var link, node;
 var width = parseInt(svg.style('width'));
 var height = parseInt(svg.style('height'));
 var color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -27,16 +28,19 @@ var transform = d3.zoomIdentity;
 d3.json("newCleanedData.json", function (err, cleanedData) {
     if (err) throw err;
 
-    var link = svgGroup.append("g")
+    link = svgGroup.append("g")
         .attr("class", "links")
         .selectAll("line")
         .data(cleanedData[1])
         .enter().append("line")
         .attr("stroke-width", function (d) {
             return Math.log(d["value"]) + 1;
+        })
+        .attr("stroke", function () {
+            return "#999"
         });
 
-    var node = svgGroup.append("g")
+    node = svgGroup.append("g")
         .attr("class", "nodes")
         .selectAll("circle")
         .data(cleanedData[0])
@@ -48,9 +52,7 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
             return color(d["Continent"]);
         })
         .on("mouseover", mouseover)
-        .on("mousemove", function (d) {
-            mousemove(d);
-        })
+        .on("mousemove", mousemove)
         .on("mouseout", mouseout)
         .call(d3.drag()
             .on("start", dragstarted)
@@ -97,27 +99,44 @@ function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
+    link.attr("stroke", function (lk) {
+        if (lk.source == d || lk.target == d)
+            return "#6666D0";
+    });
 }
 
 function dragged(d) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
+    link.attr("stroke", function (lk) {
+        if (lk.source == d || lk.target == d)
+            return "#6666D0";
+    });
 }
 
 function dragended(d) {
     if (!d3.event.active) simulation.alphaTarget(0);
     d.fx = null;
     d.fy = null;
+    link.attr("stroke", function () {
+        return "#999";
+    });
 }
 
 function zoomed() {
     svgGroup.attr("transform", d3.event.transform);
 }
 
-function mouseover() {
+function mouseover(d) {
     tooltip.transition()
         .duration(300)
         .style("opacity", 1);
+    link.attr("stroke", function (lk) {
+        if (lk.source == d || lk.target == d)
+            return "#6666D0";
+        else
+            return "#999";
+    });
 }
 
 function mousemove(d) {
@@ -131,4 +150,7 @@ function mouseout() {
     tooltip.transition()
         .duration(300)
         .style("opacity", 1e-6);
+    link.attr("stroke", function () {
+        return "#999";
+    });
 }
