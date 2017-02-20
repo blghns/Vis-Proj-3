@@ -8,7 +8,6 @@ body {
 }
 
 .links line {
-    stroke: #999;
     stroke-opacity: 0.2;
 }
 
@@ -22,7 +21,7 @@ body {
 .tooltip {
 	position: absolute;
 	text-align: left;
-	width: 75px;
+	width: auto;
 	height: 25px;
 	padding: 8px;
 	font: 11px sans-serif;
