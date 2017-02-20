@@ -69,7 +69,6 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
         .scaleExtent([1 / 2, 8])
         .on("zoom", zoomed));
 
-    resize();
     d3.select(window).on("resize", resize);
 
     function ticked() {
@@ -164,8 +163,13 @@ function resize() {
 
     attractForce = d3.forceManyBody().strength(10).distanceMax(width).distanceMin(height);
     repelForce = d3.forceManyBody().strength(-height).distanceMax(height).distanceMin(10);
-    
+
     simulation.force("center", d3.forceCenter(width / 2, height / 2))
         .force("attractForce", attractForce)
-        .force("repelForce", repelForce)
+        .force("repelForce", repelForce);
+
+    if (!d3.event.active){
+        simulation.alphaTarget(0.3).restart();
+        setTimeout(function(){simulation.alphaTarget(0)}, 500);
+    }
 }
