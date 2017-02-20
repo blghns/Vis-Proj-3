@@ -114,6 +114,9 @@ function dragged(d) {
         if (lk.source == d || lk.target == d)
             return "#6666D0";
     });
+    tooltip.transition()
+        .duration(300)
+        .style("opacity", 1e-6);
 }
 
 function dragended(d) {
@@ -123,6 +126,7 @@ function dragended(d) {
     link.attr("stroke", function () {
         return "#999";
     });
+    tooltip.style("opacity", 1e-6);
 }
 
 function zoomed() {
@@ -144,8 +148,8 @@ function mouseover(d) {
 function mousemove(d) {
     tooltip.select('.country').html('<b>' + d["Country"]);
     tooltip.select('.airports').html('Airports: ' + d["Count"].toLocaleString());
-    tooltip.style("left", (d3.event.pageX) + 10 + "px")
-        .style("top", (d3.event.pageY) + 10 + "px");
+    tooltip.style("left", (d3.event.x) + 10 + "px")
+        .style("top", (d3.event.y) + 10 + "px");
 }
 
 function mouseout() {
