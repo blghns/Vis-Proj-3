@@ -33,5 +33,5 @@ body {
                         
 
 svg {
-    cursor: url("customCursor.svg"), pointer;
+    cursor: url("customCursor.svg") 5 5, pointer;
 }
