@@ -34,127 +34,76 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
 
     link = svgGroup.append("g")
         .attr("class", "links")
-        .selectAll("line")
-        .data(linkData)
-        .enter().append("line")
-        .attr("stroke-width", function (d) {
-            return Math.log(d["value"]) + 1;
-        })
-        .attr("stroke", function () {
-            return "#999"
-        });
+        .selectAll("line");
 
     node = svgGroup.append("g")
         .attr("class", "nodes")
-        .selectAll("circle")
-        .data(nodeData)
-        .enter().append("circle")
-        .attr("r", function (d) {
-            return Math.sqrt(d["Count"]) + 2;
-        })
-        .attr("fill", function (d) {
-            return color(d["Continent"]);
-        })
-        .on("mouseover", mouseover)
-        .on("mousemove", mousemove)
-        .on("mouseout", mouseout)
-        .call(d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended));
+        .selectAll("circle");
 
-    simulation.nodes(nodeData)
-        .on("tick", ticked);
-
-    simulation.force("link")
-        .links(linkData);
+    update(["Asia", "Europe", "North America", "Africa", "South America", "Oceania", "Antarctica"]);
 
     svg.call(d3.zoom()
         .scaleExtent([1 / 2, 8])
         .on("zoom", zoomed));
 
     d3.select(window).on("resize", resize);
-	
-	var legend = svgGroup.selectAll(".legend")
-		.data(color.domain())
-		.enter().append("g")
-		.attr("class", "legend")
-		.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
 
-	legend.append("circle")
-		.attr("cx", width - 15)
-		.attr("r", 8)
-		.attr("cy", 12)
-		.style("stroke", color)
-		.style("fill", "white")
-		.attr("stroke-width", 3)
-		.on("click", function(d){
-			if (toggleFilter(d) == 1){
-				d3.select(this).style("fill", "black");
-				d3.select(this).transition();
-			}
-			else{
-				d3.select(this).style("fill", "white");
-				d3.select(this).transition();
-			}
-		});
+    var legend = svgGroup.selectAll(".legend")
+        .data(color.domain())
+        .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function (d, i) {
+            return "translate(0," + i * 20 + ")";
+        });
 
-	legend.append("text")
-		.attr("x", width - 30)
-		.attr("y", 9)
-		.attr("dy", ".35em")
-		.style("text-anchor", "end")
-		.style("fill;", color)
-		.text(function(d) { return d; });
+    legend.append("circle")
+        .attr("cx", width - 15)
+        .attr("r", 8)
+        .attr("cy", 12)
+        .style("stroke", color)
+        .style("fill", "white")
+        .attr("stroke-width", 3)
+        .on("click", function (d) {
+            if (toggleFilter(d) == 1) {
+                d3.select(this).style("fill", "black");
+                d3.select(this).transition();
+            }
+            else {
+                d3.select(this).style("fill", "white");
+                d3.select(this).transition();
+            }
+        });
 
-    function ticked() {
-        link
-            .attr("x1", function (d) {
-                return d.source.x;
-            })
-            .attr("y1", function (d) {
-                return d.source.y;
-            })
-            .attr("x2", function (d) {
-                return d.target.x;
-            })
-            .attr("y2", function (d) {
-                return d.target.y;
-            });
-
-        node
-            .attr("cx", function (d) {
-                return d.x;
-            })
-            .attr("cy", function (d) {
-                return d.y;
-            });
-    }
-
+    legend.append("text")
+        .attr("x", width - 30)
+        .attr("y", 9)
+        .attr("dy", ".35em")
+        .style("text-anchor", "end")
+        .style("fill;", color)
+        .text(function (d) {
+            return d;
+        });
 });
 
-function toggleFilter(d){
-	var index = filterOptions.indexOf(d)
-	var filterAdded = true;
-	if (index > -1){
-		filterOptions.splice(index, 1);
-		filterAdded = false;
-	}
-	else{
-		filterOptions.push(d);
-	}
-	if (typeof filterOptions[0] == 'undefined'){
-		filterContinents(["Asia",  "Europe", "North America", "Africa", "South America", "Oceania", "Antarctica"]);
-	}
-	else{
-		filterContinents(filterOptions);
-	}
-	return filterAdded;
+function toggleFilter(d) {
+    var index = filterOptions.indexOf(d);
+    var filterAdded = true;
+    if (index > -1) {
+        filterOptions.splice(index, 1);
+        filterAdded = false;
+    }
+    else {
+        filterOptions.push(d);
+    }
+    if (typeof filterOptions[0] == 'undefined') {
+        update(["Asia", "Europe", "North America", "Africa", "South America", "Oceania", "Antarctica"]);
+    }
+    else {
+        update(filterOptions);
+    }
+    return filterAdded;
 }
 
-function resetFilter() {
-	
-}
 function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
@@ -238,21 +187,58 @@ function resize() {
     }
 }
 
-function filterContinents(selectedContinents) {
+function update(selectedContinents) {
     var newNodeData = nodeData.filter(function (d) {
         return selectedContinents.includes(d["Continent"]);
     });
+
     var newLinkData = linkData.filter(function (d) {
-        return selectedContinents.includes(d.source.Continent) && selectedContinents.includes(d.target.Continent);
+        var foundSourceContinent = newNodeData.find(function (c) {
+            return c.Country === d.source || c.Country === d.source.Country;
+        });
+
+        var foundTargetContinent = newNodeData.find(function (c) {
+            return c.Country === d.target || c.Country === d.target.Country;
+        });
+
+        return foundSourceContinent && foundTargetContinent;
     });
 
-    node.data(newNodeData)
-        .exit().transition()
-        .attr("r", 0)
+    var t = d3.transition()
+        .duration(1000)
+        .ease(d3.easeCubicOut);
 
-    node.enter().append("circle").merge(node)
-        .attr("r", function (d) {
-            return Math.sqrt(d["Count"]) + 2;
+    link = link.data(newLinkData);
+
+    link.exit().transition(t)
+        .attr("stroke-width", 0)
+        .remove();
+
+    link = link.enter()
+        .append("line")
+        .call(function (link) {
+            link.transition(t).attr("stroke-width", function (d) {
+                return Math.log(d["value"]) + 1;
+            })
+                .attr("stroke", function () {
+                    return "#999"
+                });
+        })
+        .merge(link);
+
+    node = node.data(newNodeData);
+
+    node.exit().transition(t)
+        .attr("r", 0)
+        .remove();
+
+    node = node.enter().append("circle")
+        .merge(node)
+        .call(function (node) {
+            node.transition(t)
+                .attr("r", function (d) {
+                    return Math.sqrt(d["Count"]) + 2;
+                });
         })
         .attr("fill", function (d) {
             return color(d["Continent"]);
@@ -265,16 +251,36 @@ function filterContinents(selectedContinents) {
             .on("drag", dragged)
             .on("end", dragended));
 
-    link.data(newLinkData)
-        .exit().transition()
-        .attr("stroke-width", 0);
+    simulation.nodes(newNodeData)
+        .on("tick", ticked);
 
-    link.enter().append("line").merge(link)
-        .attr("stroke-width", function (d) {
-            return Math.log(d["value"]) + 1;
-        })
-        .attr("stroke", function () {
-            return "#999"
-        });
+    simulation.force("link")
+        .links(newLinkData);
 
+    simulation.alpha(1).restart();
+
+    function ticked() {
+        link
+            .attr("x1", function (d) {
+                return d.source.x;
+            })
+            .attr("y1", function (d) {
+                return d.source.y;
+            })
+            .attr("x2", function (d) {
+                return d.target.x;
+            })
+            .attr("y2", function (d) {
+                return d.target.y;
+            });
+
+        node
+            .attr("cx", function (d) {
+                return d.x;
+            })
+            .attr("cy", function (d) {
+                return d.y;
+            });
+    }
 }
+
