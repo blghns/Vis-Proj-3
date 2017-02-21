@@ -7,6 +7,7 @@ var height = parseInt(svg.style('height'));
 var color = d3.scaleOrdinal(d3.schemeCategory10);
 var attractForce = d3.forceManyBody().strength(10).distanceMax(width).distanceMin(height);
 var repelForce = d3.forceManyBody().strength(-height).distanceMax(height).distanceMin(10);
+var filterOptions = [];
 
 var tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
@@ -73,6 +74,38 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
         .on("zoom", zoomed));
 
     d3.select(window).on("resize", resize);
+	
+	var legend = svgGroup.selectAll(".legend")
+		.data(color.domain())
+		.enter().append("g")
+		.attr("class", "legend")
+		.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+	legend.append("circle")
+		.attr("cx", width - 15)
+		.attr("r", 8)
+		.attr("cy", 12)
+		.style("stroke", color)
+		.style("fill", "white")
+		.attr("stroke-width", 3)
+		.on("click", function(d){
+			if (toggleFilter(d) == 1){
+				d3.select(this).style("fill", "black");
+				d3.select(this).transition();
+			}
+			else{
+				d3.select(this).style("fill", "white");
+				d3.select(this).transition();
+			}
+		});
+
+	legend.append("text")
+		.attr("x", width - 30)
+		.attr("y", 9)
+		.attr("dy", ".35em")
+		.style("text-anchor", "end")
+		.style("fill;", color)
+		.text(function(d) { return d; });
 
     function ticked() {
         link
@@ -100,6 +133,28 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
 
 });
 
+function toggleFilter(d){
+	var index = filterOptions.indexOf(d)
+	var filterAdded = true;
+	if (index > -1){
+		filterOptions.splice(index, 1);
+		filterAdded = false;
+	}
+	else{
+		filterOptions.push(d);
+	}
+	if (typeof filterOptions[0] == 'undefined'){
+		filterContinents(["Asia",  "Europe", "North America", "Africa", "South America", "Oceania", "Antarctica"]);
+	}
+	else{
+		filterContinents(filterOptions);
+	}
+	return filterAdded;
+}
+
+function resetFilter() {
+	
+}
 function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
     d.fx = d.x;
@@ -194,7 +249,6 @@ function filterContinents(selectedContinents) {
     node.data(newNodeData)
         .exit().transition()
         .attr("r", 0)
-        .remove();
 
     node.enter().append("circle").merge(node)
         .attr("r", function (d) {
