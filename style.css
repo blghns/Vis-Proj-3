@@ -18,6 +18,10 @@ body {
     cursor: pointer;
 }
 
+.legend circle {
+    cursor: pointer;
+}
+
 .tooltip {
 	position: absolute;
 	text-align: left;

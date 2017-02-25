@@ -46,6 +46,8 @@ d3.json("newCleanedData.json", function (err, cleanedData) {
         .scaleExtent([1 / 2, 8])
         .on("zoom", zoomed));
 
+    d3.select("svg").on("dblclick.zoom", null);
+
     d3.select(window).on("resize", resize);
 
     var legend = svgGroup.selectAll(".legend")
